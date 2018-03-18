@@ -1,0 +1,74 @@
+- hosts: localhost
+  connection: local
+  gather_facts: '!ohai'
+  tasks:
+
+    - name: cleanup
+      gcs_bucket:
+        state: absent
+        name: chemikadze-test-ansible
+
+    - name: create bucket
+      gcs_bucket:
+        state: present
+        name: chemikadze-test-ansible
+      register: result
+      failed_when: not result.changed
+
+    - name: grant acl
+      gcs_bucket:
+        state: present
+        name: chemikadze-test-ansible
+        acl:
+          - entity: user-chemikadze@gmail.com
+            role: OWNER
+      register: result
+      failed_when: not result.changed
+
+    - name: revoke acl
+      gcs_bucket:
+        state: present
+        name: chemikadze-test-ansible
+        acl:
+          - entity: user-chemikadze@gmail.com
+            revoke: true
+      register: result
+      failed_when: not result.changed
+
+    - name: grant default acl
+      gcs_bucket:
+        state: present
+        name: chemikadze-test-ansible
+        default_acl:
+          - entity: user-chemikadze@gmail.com
+            role: OWNER
+      register: result
+      failed_when: not result.changed
+
+    - name: grant iam policy
+      gcs_bucket:
+        state: present
+        name: chemikadze-test-ansible
+        iam_policy:
+          - member: user:chemikadze@gmail.com
+            role: roles/storage.objectAdmin
+      register: result
+      failed_when: not result.changed
+
+    - name: revoke iam policy
+      gcs_bucket:
+        state: present
+        name: chemikadze-test-ansible
+        iam_policy:
+          - member: user:chemikadze@gmail.com
+            role: roles/storage.objectAdmin
+            revoke: true
+      register: result
+      failed_when: not result.changed
+
+    - name: delete bucket
+      gcs_bucket:
+        state: absent
+        name: chemikadze-test-ansible
+      register: result
+      failed_when: not result.changed
