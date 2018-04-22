@@ -1,0 +1,31 @@
+- hosts: localhost
+  connection: local
+  gather_facts: '!ohai'
+  tasks:
+
+    - name: create
+      stackdriver_alert_policy:
+        display_name: "Test API policy"
+        documentation: "Urgently run in circles and escalate ASAP"
+        combiner: AND
+        conditions:
+          - displayName: CPU is too high on a VM
+            conditionThreshold:
+              filter: |
+                resource.type = "gce_instance"
+                AND
+                metric.type = "compute.googleapis.com/instance/cpu/utilization"
+              thresholdValue: 99
+              duration: "60s"
+              comparison: COMPARISON_GT
+      register: created
+
+    - name: update
+      stackdriver_alert_policy:
+        name: "{{ created.alert_policy.name }}"
+        display_name: "Updated test API policy"
+
+    - name: delete
+      stackdriver_alert_policy:
+        name: "{{ created.alert_policy.name }}"
+        state: absent
